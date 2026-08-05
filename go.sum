@@ -1,0 +1,4 @@
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1gUm0GX6/6f7CMUU=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOia5nYf1K6lCc=
+go.uber.org/zap v1.27.0 h1:aJMhYGrd5QSmlpLMr2MftRKl7t8J8PTZPA732Zqdm0=
+go.uber.org/zap v1.27.0/go.mod h1:7KHcEGdCD5PDLPYQfYC7j33odlEA+LS+Ap6j4CgNfM=

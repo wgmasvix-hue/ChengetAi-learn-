@@ -1,0 +1,93 @@
+# Caddy configuration for ChengetAi Platform
+# Serves as reverse proxy for all services
+
+:80 {
+    # Health checks
+    handle /health {
+        respond "OK" 200
+    }
+
+    # API Gateway routing
+    handle /api/v1/* {
+        reverse_proxy api-gateway:8000
+    }
+
+    # Authentication service
+    handle /auth/* {
+        reverse_proxy auth-service:8001
+    }
+
+    # User service
+    handle /users/* {
+        reverse_proxy user-service:8002
+    }
+
+    # School service
+    handle /schools/* {
+        reverse_proxy school-service:8003
+    }
+
+    # Wallet service
+    handle /wallet/* {
+        reverse_proxy wallet-service:8004
+    }
+
+    # Payment service
+    handle /payments/* {
+        reverse_proxy payment-service:8005
+    }
+
+    # Notification service
+    handle /notifications/* {
+        reverse_proxy notification-service:8006
+    }
+
+    # Analytics service
+    handle /analytics/* {
+        reverse_proxy analytics-service:8007
+    }
+
+    # Search service
+    handle /search/* {
+        reverse_proxy search-service:8008
+    }
+
+    # Prometheus
+    handle /metrics {
+        reverse_proxy prometheus:9090
+    }
+
+    # Grafana
+    handle /grafana/* {
+        reverse_proxy grafana:3000
+    }
+
+    # Default response
+    handle {
+        respond "ChengetAi API Gateway" 200
+    }
+
+    # Logging
+    log {
+        format json
+        output stdout
+    }
+
+    # CORS headers
+    header /* {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Methods GET,POST,PUT,DELETE,OPTIONS
+        Access-Control-Allow-Headers Content-Type,Authorization
+    }
+}
+
+# HTTPS configuration (uncomment for production)
+# your-domain.com {
+#     reverse_proxy api-gateway:8000
+#     encode gzip
+#
+#     log {
+#         format json
+#         output /var/log/caddy/access.log
+#     }
+# }
