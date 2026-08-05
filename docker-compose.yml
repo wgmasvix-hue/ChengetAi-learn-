@@ -587,6 +587,46 @@ services:
       timeout: 5s
       retries: 5
 
+  # Analytics & Reporting - Phase 4
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.service
+      args:
+        SERVICE_NAME: analytics-service
+    container_name: chengetai-analytics-service
+    environment:
+      SERVICE_NAME: analytics-service
+      SERVICE_PORT: 8012
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: chengetai
+      DB_USER: chengetai
+      DB_PASSWORD: chengetai_dev_password_change_in_prod
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+      ANALYTICS_RETENTION_DAYS: 90
+      ANALYTICS_BATCH_SIZE: 100
+      REPORT_GENERATION_TIME: "00:00"
+      LOG_LEVEL: debug
+    ports:
+      - "8012:8012"
+    networks:
+      - chengetai
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
   redis_data:

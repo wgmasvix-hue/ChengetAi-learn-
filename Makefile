@@ -24,7 +24,7 @@ install-deps:
 build:
 	@echo "Building ChengetAi services..."
 	@mkdir -p bin
-	@for service in api-gateway auth-service user-service school-service wallet-service payment-service notification-service analytics-service search-service ai-service quiz-service recommendations-service; do \
+	@for service in api-gateway auth-service user-service school-service wallet-service payment-service notification-service analytics-service search-service ai-service quiz-service recommendations-service analytics-service; do \
 		echo "Building $$service..."; \
 		cd apps/$$service && make build && cd ../..; \
 	done
@@ -73,11 +73,13 @@ docker-up:
 	@echo "  Quiz Service:     http://localhost:8010"
 	@echo "  Recommendations:  http://localhost:8011"
 	@echo ""
+	@echo "Analytics & Reporting (Phase 4):"
+	@echo "  Analytics Service: http://localhost:8012"
+	@echo ""
 	@echo "Additional Services:"
 	@echo "  Wallet Service:   http://localhost:8004"
 	@echo "  Payment Service:  http://localhost:8005"
 	@echo "  Notification:     http://localhost:8006"
-	@echo "  Analytics Service: http://localhost:8007"
 	@echo ""
 	@echo "Monitoring:"
 	@echo "  Prometheus:       http://localhost:9090"
@@ -100,7 +102,7 @@ dev: docker-up
 
 health-check:
 	@echo "Checking service health..."
-	@for port in 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 8011; do \
+	@for port in 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 8011 8012; do \
 		echo -n "Port $$port: "; \
 		curl -s -o /dev/null -w "%{http_code}" http://localhost:$$port/health || echo "OFFLINE"; \
 		echo ""; \
