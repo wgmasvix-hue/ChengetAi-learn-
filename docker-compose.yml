@@ -471,6 +471,122 @@ services:
       timeout: 5s
       retries: 5
 
+  # Intelligence Layer - Phase 3
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.service
+      args:
+        SERVICE_NAME: ai-service
+    container_name: chengetai-ai-service
+    environment:
+      SERVICE_NAME: ai-service
+      SERVICE_PORT: 8009
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: chengetai
+      DB_USER: chengetai
+      DB_PASSWORD: chengetai_dev_password_change_in_prod
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-sk-test}
+      CLAUDE_MODEL: claude-opus-5
+      CLAUDE_MAX_TOKENS: 4096
+      RAG_MAX_CONTEXT_LENGTH: 8192
+      RAG_MIN_SIMILARITY: 0.5
+      RAG_TOP_K: 5
+      LOG_LEVEL: debug
+    ports:
+      - "8009:8009"
+    networks:
+      - chengetai
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8009/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  quiz-service:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.service
+      args:
+        SERVICE_NAME: quiz-service
+    container_name: chengetai-quiz-service
+    environment:
+      SERVICE_NAME: quiz-service
+      SERVICE_PORT: 8010
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: chengetai
+      DB_USER: chengetai
+      DB_PASSWORD: chengetai_dev_password_change_in_prod
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+      DEFAULT_QUESTION_COUNT: 10
+      DEFAULT_DIFFICULTY: medium
+      LOG_LEVEL: debug
+    ports:
+      - "8010:8010"
+    networks:
+      - chengetai
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  recommendations-service:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.service
+      args:
+        SERVICE_NAME: recommendations-service
+    container_name: chengetai-recommendations-service
+    environment:
+      SERVICE_NAME: recommendations-service
+      SERVICE_PORT: 8011
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: chengetai
+      DB_USER: chengetai
+      DB_PASSWORD: chengetai_dev_password_change_in_prod
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+      DEFAULT_TOP_K: 10
+      DEFAULT_MIN_SIMILARITY: 0.5
+      DEFAULT_STRATEGY: hybrid
+      LOG_LEVEL: debug
+    ports:
+      - "8011:8011"
+    networks:
+      - chengetai
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8011/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
   redis_data:
