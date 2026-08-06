@@ -70,16 +70,40 @@ func Recovery() func(http.Handler) http.Handler {
 	}
 }
 
-// CORS sets up CORS headers
+// CORS sets up CORS headers with proper origin validation
 func CORS(cfg *config.Config) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			origin := r.Header.Get("Origin")
+
+			// SECURITY: Never use wildcard "*" in production CORS
+			// Only allow requests from specified origins
+			allowedOrigins := cfg.CORSAllowedOrigins // Load from environment
+			isOriginAllowed := false
+
+			// Check if origin is in allowlist
+			for _, allowed := range allowedOrigins {
+				if origin == allowed {
+					isOriginAllowed = true
+					break
+				}
+			}
+
+			// Only set CORS headers if origin is allowed
+			if isOriginAllowed && origin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+				w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
+				w.Header().Set("Access-Control-Expose-Headers", "X-Request-ID, X-Total-Count")
+			} else if origin != "" {
+				// Request from disallowed origin - don't set CORS headers
+				// This will cause CORS check to fail in browser
+			}
 
 			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusOK)
+				w.WriteHeader(http.StatusNoContent)
 				return
 			}
 
