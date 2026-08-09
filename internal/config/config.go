@@ -11,6 +11,7 @@ type Config struct {
 	AppName        string
 	AppEnv         string
 	AppPort        string
+	AppURL         string // public base URL, e.g. https://learn.dare.co.zw
 	DatabaseURL    string
 	RedisURL       string
 	JWTSecret      string
@@ -28,6 +29,7 @@ func Load() (Config, error) {
 		AppName:        getEnv("APP_NAME", "chengetai-learn-api"),
 		AppEnv:         getEnv("APP_ENV", "development"),
 		AppPort:        getEnv("APP_PORT", "8080"),
+		AppURL:         getEnv("APP_URL", "http://localhost:8080"),
 		DatabaseURL:    strings.TrimSpace(os.Getenv("DATABASE_URL")),
 		RedisURL:       strings.TrimSpace(os.Getenv("REDIS_URL")),
 		JWTSecret:      strings.TrimSpace(os.Getenv("JWT_SECRET")),

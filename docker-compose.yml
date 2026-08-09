@@ -4,11 +4,16 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-chengetai}
       POSTGRES_USER: ${POSTGRES_USER:-chengetai}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chengetai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chengetai_dev}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chengetai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - chengetai-network
 
@@ -16,6 +21,11 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - chengetai-network
 
@@ -28,9 +38,15 @@ services:
     environment:
       DATABASE_URL: ${DOCKER_DATABASE_URL}
       REDIS_URL: redis://redis:6379
+      # Development default allows the local web container.
+      # Production: set to https://learn.dare.co.zw in your .env
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8081}
+      CSP_CONNECT_SRC: ${CSP_CONNECT_SRC:-'self' http://localhost:8080}
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "8080:8080"
     networks:
@@ -47,9 +63,30 @@ services:
     networks:
       - chengetai-network
 
+  # Production reverse proxy — handles TLS for learn.dare.co.zw.
+  # Only enable this in production (comment out in local dev).
+  # Caddy automatically provisions a Let's Encrypt certificate for the domain.
+  #
+  # caddy:
+  #   image: caddy:2-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - chengetai-network
+
 networks:
   chengetai-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  # caddy_data:
+  # caddy_config:
