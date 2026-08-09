@@ -1,73 +1,8 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.so.*
-*.dylib
+.env
 bin/
 dist/
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool
-*.out
-
-# Dependency directories
-vendor/
-go.sum.bak
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Build
-/bin
-/dist
-*.o
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Logs
+coverage.out
 *.log
-logs/
-
-# Temporary files
-tmp/
-temp/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-docker-compose.override.yml
-.dockerignore
-
-# Configuration
-config.local.yaml
-
-# PID
 *.pid
-*.pid.lock
-
-# Compiled test binaries
-test-results/
-
-# Coverage reports
-coverage.txt
-coverage.html
-*.coverprofile
+.DS_Store
+vendor/

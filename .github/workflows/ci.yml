@@ -1,0 +1,34 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: chengetai_test
+          POSTGRES_USER: chengetai
+          POSTGRES_PASSWORD: testpassword
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 10s
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.22' }
+      - name: Go fmt
+        run: gofmt -l . | grep . && exit 1 || true
+      - name: Go vet
+        run: go vet ./...
+      - name: Run tests
+        run: go test ./...
+        env:
+          DATABASE_URL: postgres://chengetai:testpassword@localhost:5432/chengetai_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key-minimum-32-characters
+      - name: Build
+        run: go build ./cmd/api/...
