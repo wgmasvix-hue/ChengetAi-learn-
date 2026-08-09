@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chengetai-postgres
+    environment:
+      POSTGRES_USER: chengetai
+      POSTGRES_PASSWORD: chengetai
+      POSTGRES_DB: chengetai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U chengetai" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chengetai-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: chengetai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chengetai-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chengetai-api
+    environment:
+      APP_NAME: chengetai-learn
+      APP_ENV: development
+      APP_PORT: 8080
+      DATABASE_URL: postgres://chengetai:chengetai@postgres:5432/chengetai?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: dev-secret-change-in-production-min-32-chars
+      LOG_LEVEL: info
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chengetai-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  chengetai-network:
+    driver: bridge

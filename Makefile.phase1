@@ -1,0 +1,75 @@
+.PHONY: help dev build test lint docker-up docker-down docker-clean migrate migrate-down seed clean
+
+help:
+	@echo "ChengetAi Learn - Phase One Commands"
+	@echo ""
+	@echo "Development:"
+	@echo "  make dev              Run development server"
+	@echo "  make build            Build Go binaries"
+	@echo "  make test             Run tests"
+	@echo "  make lint             Run linters"
+	@echo ""
+	@echo "Database:"
+	@echo "  make migrate          Run database migrations"
+	@echo "  make migrate-down     Rollback migrations"
+	@echo "  make seed             Seed database with test data"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-up        Start Docker containers"
+	@echo "  make docker-down      Stop Docker containers"
+	@echo "  make docker-clean     Remove containers and volumes"
+	@echo "  make docker-logs      Show Docker logs"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  make clean            Remove build artifacts"
+
+dev:
+	go run ./cmd/api/main.go
+
+build:
+	go build -o bin/api ./cmd/api
+	go build -o bin/migrate ./cmd/migrate
+	go build -o bin/worker ./cmd/worker
+
+test:
+	go test -v -count=1 ./...
+
+lint:
+	go fmt ./...
+	go vet ./...
+
+docker-up:
+	docker-compose -f docker-compose-phase1.yml up -d
+
+docker-down:
+	docker-compose -f docker-compose-phase1.yml down
+
+docker-clean:
+	docker-compose -f docker-compose-phase1.yml down -v
+
+docker-logs:
+	docker-compose -f docker-compose-phase1.yml logs -f api
+
+docker-logs-db:
+	docker-compose -f docker-compose-phase1.yml logs -f postgres
+
+docker-logs-redis:
+	docker-compose -f docker-compose-phase1.yml logs -f redis
+
+migrate:
+	@echo "Running database migrations..."
+	psql $$DATABASE_URL < migrations/000001_create_tables.up.sql
+
+migrate-down:
+	@echo "Rolling back database migrations..."
+	psql $$DATABASE_URL < migrations/000001_create_tables.down.sql
+
+seed:
+	@echo "Seeding database..."
+	psql $$DATABASE_URL < scripts/seed.sql
+
+clean:
+	rm -rf bin/
+	go clean
+
+.DEFAULT_GOAL := help
